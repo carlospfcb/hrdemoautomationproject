@@ -26,10 +26,10 @@ const testingData = {
     assignLeaveInfo: {
         employeeName: 'Amelia Brown',
         leaveType: 'CAN - Bereavement', 
-        fromDate: '2026-01-05',
-        toDate: '2026-01-05',
+        fromDate: '2026-01-06',
+        toDate: '2026-01-06',
         duration: 'Half Day - Morning',
-        comment: 'Testing leave assignment'
+        comment: 'Testing le6ave assignment'
     }
 
 };
