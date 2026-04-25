@@ -1,4 +1,4 @@
-name: UI + API Automation
+name: Playwright + Postman + Allure
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Setup Node
@@ -17,37 +17,32 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install project dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
+      - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
+      # ▶️ PLAYWRIGHT TESTS (genera allure-results)
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      # ▶️ Generar Allure report HTML
+      - name: Generate Allure report
+        run: |
+          npx allure generate allure-results --clean -o allure-report
+
+      # ▶️ Subir Allure report como artifact
+      - name: Upload Allure report
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report
+
+      # ▶️ POSTMAN TESTS (Newman)
       - name: Install Newman
         run: npm install -g newman
 
-      # ---------- UI TESTS ----------
-      - name: Run Playwright UI tests
-        run: npx playwright test tests
-
-      # ---------- API TESTS ----------
-      - name: Run Postman API tests
+      - name: Run Postman collection
         run: |
-          newman run "api/tests/Disney_API.postman_collection.json" \
-          --reporters cli,html \
-          --reporter-html-export newman-report.html
-
-      # ---------- REPORTS ----------
-      - name: Upload Playwright Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report
-
-      - name: Upload Newman Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: newman-report
-          path: newman-report.html
+          newman run "hrdemoautomationproject/apitests/Disney_API.postman_collection.json"
