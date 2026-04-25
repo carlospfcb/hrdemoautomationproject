@@ -33,7 +33,7 @@ jobs:
       # ---------- API TESTS ----------
       - name: Run Postman API tests
         run: |
-          newman run "api/tests/Disney API.postman_collection.json" \
+          newman run "api/tests/Disney_API.postman_collection.json" \
           --reporters cli,html \
           --reporter-html-export newman-report.html
 
