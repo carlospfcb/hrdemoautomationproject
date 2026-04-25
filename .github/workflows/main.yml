@@ -1,46 +1,53 @@
-name: Playwright Tests
+name: UI + API Automation
 
 on:
   push:
-    branches: [ main, crpdev ]
   pull_request:
-    branches: [ main, crpdev ]
-  workflow_dispatch: # Esto te permite ejecutarlo manualmente para probar
 
 jobs:
-  test:
-    timeout-minutes: 60
+  tests:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm' # Acelera las ejecuciones futuras
 
-      - name: Install dependencies
-        run: npm ci # Usa 'ci' en lugar de 'install' para entornos de CI
+      - name: Install project dependencies
+        run: npm ci
 
-      - name: Install Playwright Browsers
+      - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
-        run: npx playwright test tests # Apunta específicamente a tu carpeta 'tests'
+      - name: Install Newman
+        run: npm install -g newman
 
-      - name: Generate Allure Report
-        if: always()
+      # ---------- UI TESTS ----------
+      - name: Run Playwright UI tests
+        run: npx playwright test tests
+
+      # ---------- API TESTS ----------
+      - name: Run Postman API tests
         run: |
-          # Instalamos localmente para evitar problemas de permisos globales
-          npm install allure-commandline --save-dev 
-          npx allure generate allure-results --clean -o allure-report
+          newman run "api/tests/Disney API.postman_collection.json" \
+          --reporters cli,html \
+          --reporter-html-export newman-report.html
 
-      - name: Upload Allure Artifact
+      # ---------- REPORTS ----------
+      - name: Upload Playwright Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-report
-          path: allure-report/
-          retention-days: 30
+          name: playwright-report
+          path: playwright-report
+
+      - name: Upload Newman Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-report
+          path: newman-report.html
