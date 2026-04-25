@@ -1,0 +1,16 @@
+{
+  "name": "qachallenge",
+  "version": "1.0.0",
+  "description": "Build a set of automated tests covering UI and API testing, integrated into a CI pipeline. This challenge evaluates your ability to write clean, maintainable test automation code, apply solid QA fundamentals, and deliver reliable tests within an existing framework context.",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "allure-commandline": "^2.38.1",
+    "allure-playwright": "^3.7.1"
+  }
+}
