@@ -1,0 +1,357 @@
+{
+  "info": {
+    "_postman_id": "9e516ba5-6ad9-4aad-8b4e-8b955edb9a61",
+    "name": "Disney API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "18013187"
+  },
+  "item": [
+    {
+      "name": "GetAllCharacters",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Status code\r",
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Body is valid JSON\", function () {\r",
+              "    pm.response.to.be.json;\r",
+              "});\r",
+              "\r",
+              "//Response structure\r",
+              "pm.test(\"Response has correct structure\", function () {\r",
+              "    const json = pm.response.json();\r",
+              "    pm.expect(json).to.have.property('info');\r",
+              "    pm.expect(json).to.have.property('data');\r",
+              "\r",
+              "    pm.expect(json.info).to.have.property('count');\r",
+              "    pm.expect(json.info).to.have.property('totalPages');\r",
+              "    pm.expect(json.info).to.have.property('nextPage');\r",
+              "    pm.expect(json.info).to.have.property('previousPage');\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Info fields have correct types\", function () {\r",
+              "    const info = pm.response.json().info;\r",
+              "    pm.expect(info.count).to.be.a('number');\r",
+              "    pm.expect(info.totalPages).to.be.a('number');\r",
+              "});\r",
+              "//Pagination behavior \r",
+              "let json = pm.response.json();\r",
+              "pm.environment.set(\"nextPage\", json.nextPage);\r",
+              "\r",
+              "pm.test(\"Pagination moves to different data\", function () {\r",
+              "    const json = pm.response.json();\r",
+              "    pm.expect(json.previousPage).to.not.be.null;\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api.disneyapi.dev/character",
+          "protocol": "https",
+          "host": [
+            "api",
+            "disneyapi",
+            "dev"
+          ],
+          "path": [
+            "character"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GetAllCharacters Invalid Endpoint",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Response must be 404\r",
+              "pm.test(\"Status code is 404\", function () {\r",
+              "    pm.response.to.have.status(404);\r",
+              "});\r",
+              "\r",
+              "//Returns HTML (not best pratice, it should be JSON)\r",
+              "pm.test(\"Response is HTML\", function () {\r",
+              "    pm.expect(pm.response.headers.get(\"Content-Type\"))\r",
+              "      .to.include(\"text/html\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Error message is correct\", function () {\r",
+              "    pm.expect(pm.response.text())\r",
+              "      .to.include(\"Cannot GET /characterssss\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api.disneyapi.dev/characterssss?page=1&pageSize=2",
+          "protocol": "https",
+          "host": [
+            "api",
+            "disneyapi",
+            "dev"
+          ],
+          "path": [
+            "characterssss"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1"
+            },
+            {
+              "key": "pageSize",
+              "value": "2"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GetAllCharacters nonexistent page",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();\r",
+              "const url = new URL(pm.request.url.toString());\r",
+              "const pageSent = parseInt(url.searchParams.get(\"page\"));\r",
+              "\r",
+              "//Verify data is empty\r",
+              "pm.test(\"Verify empty data\", function () {\r",
+              "    pm.expect(json.data.length).to.equal(0);\r",
+              "});\r",
+              "\r",
+              "//Verify pagination sent is greater than total pages (it should fail)\r",
+              "pm.test(\"Detect pagination inconsistency\", function () {\r",
+              "    pm.expect(pageSent).to.be.greaterThan(json.info.totalPages);\r",
+              "    pm.expect(json.info.previousPage).to.be.null; \r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api.disneyapi.dev/character?page=9999999999999",
+          "protocol": "https",
+          "host": [
+            "api",
+            "disneyapi",
+            "dev"
+          ],
+          "path": [
+            "character"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "9999999999999"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GetAllCharacters invalid Param",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Verify invalid param response and data\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "\r",
+              "    const json = pm.response.json();\r",
+              "\r",
+              "    // Valid structure\r",
+              "    pm.expect(json).to.have.property(\"info\");\r",
+              "    pm.expect(json).to.have.property(\"data\");\r",
+              "\r",
+              "    // No results\r",
+              "    pm.expect(json.data.length).to.equal(0);\r",
+              "    pm.expect(json.info.count).to.equal(0);\r",
+              "    pm.expect(json.info.totalPages).to.equal(0);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api.disneyapi.dev/character?tvShows=@@@###$$$",
+          "protocol": "https",
+          "host": [
+            "api",
+            "disneyapi",
+            "dev"
+          ],
+          "path": [
+            "character"
+          ],
+          "query": [
+            {
+              "key": "tvShows",
+              "value": "@@@"
+            }
+          ],
+          "hash": "##$$$"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FilterByTVShows",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Iterate all the response and check tvShow = \"Jake and the Never Land Pirates\"\r",
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "const json = pm.response.json();\r",
+              "\r",
+              "// Read the videogame sent in the URL\r",
+              "const url = new URL(pm.request.url.toString());\r",
+              "const tvShowSent = url.searchParams.get(\"tvShows\");\r",
+              "\r",
+              "pm.test(\"All characters match the TV show filter\", function () {\r",
+              "    json.data.forEach(character => {\r",
+              "        pm.expect(character).to.have.property(\"tvShows\");\r",
+              "        pm.expect(character.tvShows).to.be.an(\"array\");\r",
+              "        pm.expect(character.tvShows).to.include(tvShowSent);\r",
+              "    });\r",
+              "});\r",
+              "\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api.disneyapi.dev/character?tvShows=Jake and the Never Land Pirates",
+          "protocol": "https",
+          "host": [
+            "api",
+            "disneyapi",
+            "dev"
+          ],
+          "path": [
+            "character"
+          ],
+          "query": [
+            {
+              "key": "tvShows",
+              "value": "Jake and the Never Land Pirates"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "FilterByVideoGame",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "//Iterate all the response and check videoGames = \"Kingdom Hearts III\"\r",
+              "\r",
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "const json = pm.response.json();\r",
+              "\r",
+              "// Read the videogame sent in the URL\r",
+              "const url = new URL(pm.request.url.toString());\r",
+              "const videoGameSent = url.searchParams.get(\"videoGames\");\r",
+              "\r",
+              "pm.test(\"All characters match the video game filter\", function () {\r",
+              "    pm.expect(json.data.length).to.be.greaterThan(0);\r",
+              "\r",
+              "    json.data.forEach(character => {\r",
+              "        pm.expect(character).to.have.property(\"videoGames\");\r",
+              "        pm.expect(character.videoGames).to.be.an(\"array\");\r",
+              "        pm.expect(character.videoGames).to.include(videoGameSent);\r",
+              "    });\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://api.disneyapi.dev/character?videoGames=Kingdom Hearts III",
+          "protocol": "https",
+          "host": [
+            "api",
+            "disneyapi",
+            "dev"
+          ],
+          "path": [
+            "character"
+          ],
+          "query": [
+            {
+              "key": "videoGames",
+              "value": "Kingdom Hearts III"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
