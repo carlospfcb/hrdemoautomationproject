@@ -21,7 +21,7 @@ class PageManager {
 
     getHomepage() {
      if (!this.homePage) {
-        const { Homepage } = require("../pageobjects/Homepage");
+        const { Homepage } = require("../pageobjects/HomePage");
         this.homePage = new Homepage(this.page);
         }
     return this.homePage;
